@@ -1,0 +1,10 @@
+{
+    "libs": [
+        "underscore"
+            ],
+        "plugins": {
+          "node": {},
+          "modules": {},
+          "es_modules": {}
+        }
+}
