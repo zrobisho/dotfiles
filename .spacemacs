@@ -28,11 +28,11 @@ values."
      emacs-lisp
      (javascript :variables
                  tern-command '("node" "/usr/local/bin/tern")
-                 js2-basic-offset 4
                  js2-include-node-externs t
                  js2-include-browser-externs t
                  js2-indent-bounce t
-                 js2-global-externs '("describe" "beforeEach" "afterEach" "before" "after" "it"))
+                 js2-global-externs '("describe" "beforeEach" "afterEach" "before" "after" "it")
+                 (mocha-reporter "spec"))
      java
      (c-c++ :variables
             c-c++-default-mode-for-headers 'c++-mode
@@ -55,7 +55,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(mocha gradle-mode)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -258,6 +258,58 @@ in `dotspacemacs/user-config'."
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
-)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; JAVASCRIPT
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defun javascript/init-mocha-mode ()
+    (use-package mocha
+      :defer t
+      :init
+      (progn
+        (defun spacemacs/mocha-require ()
+          "Lazy load mocha mode"
+          (require 'mocha))
+        (add-hook 'js2-mode-hook 'spacemacs/mocha-require)
+        (defun spacemacs/mocha-set-key-bindings (mode)
+          (spacemacs/declare-prefix-for-mode mode "mt" "test")
+          (spacemacs/set-leader-keys-for-major-mode mode "tt" 'mocha-test-at-point)
+          (spacemacs/set-leader-keys-for-major-mode mode "tf" 'mocha-test-file)
+          (spacemacs/set-leader-keys-for-major-mode mode "tp" 'mocha-test-project))
+        (spacemacs/mocha-set-key-bindings 'js2-mode))))
+  (javascript/init-mocha-mode)
+
+  (defun gen-node-project ()
+    (interactive)
+    "Setup default configuration for nodejs project"
+    ;; Copy files
+    (copy-file "~/dotfiles/.tern-project" "./.tern-project")
+    ;;(copy-file "~/dotfiles/dir-locals/dir-locals.js.el" "./.dir-locals.el")
+    ;; Add to .gitignore if we are using git
+    (cond (magit-inside-gitdir-p
+           (magit-gitignore "./.tern-project"))))
+
+
+  )
+
+
+
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values
+   (quote
+    ((mocha-reporter . "spec")
+     (js2-global-externs
+      (quote
+       ("beforeEach" "afterEach" "before" "after" "it")))))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
