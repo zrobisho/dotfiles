@@ -1,4 +1,4 @@
-; -*- mode: emacs-lisp -*-
+;; -*- mode: emacs-lisp -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
@@ -18,46 +18,49 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     html
+     ruby
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      auto-completion
-     ;; better-defaults
      emacs-lisp
      (javascript :variables
                  tern-command '("node" "/usr/local/bin/tern")
                  js2-include-node-externs t
                  js2-include-browser-externs t
                  js2-indent-bounce t
+                 js2-bounce-indent t
+                 js2-basic-offset 4
                  js2-global-externs '("describe" "beforeEach" "afterEach" "before" "after" "it")
-                 (mocha-reporter "spec"))
+                 nodejs-repl-arguments '("--use_strict")
+                 mocha-reporter "spec"
+                 mocha-options "--recursive")
+
      java
      (c-c++ :variables
             c-c++-default-mode-for-headers 'c++-mode
             c-c++-enable-clang-support t
             company-c-headers-path-system "/usr/include/c++/4.2.1/")
      git
-     python
+     (python :variables
+             python-test-runner 'pytest)
      scala
-     (ruby :variables
-           ruby-indent-level 4)
+     clojure
      markdown
-     ;; org
-     ;; (shell :variables
-     ;;        shell-default-height 30
-     ;;        shell-default-position 'bottom)
-     ;; spell-checking
-     ;; syntax-checking
-     ;; version-control
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(mocha groovy-mode)
+   dotspacemacs-additional-packages
+   '(
+     mocha
+     gradle-mode
+     groovy-mode
+     nodejs-repl
+     )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -250,19 +253,21 @@ values."
 It is called immediately after `dotspacemacs/init'.  You are free to put almost
 any user code here.  The exception is org related code, which should be placed
 in `dotspacemacs/user-config'."
+  ;; Load personal emacs lisp directory
+  (push "~/.elisp" load-path)
 
-  ;; Javascript Config
-  (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
-
-  ;; c++ Config
 )
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
 
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; JAVASCRIPT
+  ;;
+  ;; TODO:
+  ;; - jsdoc remove old doc if function param change
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (defun javascript/init-mocha-mode ()
     (use-package mocha
@@ -276,33 +281,58 @@ layers configuration. You are free to put any user code."
         (defun spacemacs/mocha-set-key-bindings (mode)
           (spacemacs/declare-prefix-for-mode mode "mt" "test")
           (spacemacs/set-leader-keys-for-major-mode mode "tt" 'mocha-test-at-point)
-          (spacemacs/set-leader-keys-for-major-mode mode "tf" 'mocha-test-file)
-          (spacemacs/set-leader-keys-for-major-mode mode "tp" 'mocha-test-project))
+          (spacemacs/set-leader-keys-for-major-mode mode "tb" 'mocha-test-file)
+          (spacemacs/set-leader-keys-for-major-mode mode "ta" 'mocha-test-project))
         (spacemacs/mocha-set-key-bindings 'js2-mode))))
+
+
+  (defun javascript/init-nodejs-repl-eval ()
+    (use-package nodejs-repl-eval
+      :defer t
+      :init
+      (progn
+        (defun spacemacs/nodejs-repl-eval-require ()
+          "Lazy load nodejs repl"
+          (require 'nodejs-repl-eval))
+        (add-hook 'js2-mode-hook 'spacemacs/nodejs-repl-eval-require)
+        (defun spacemacs/nodejs-repl-eval-set-key-bindings (mode)
+          (spacemacs/declare-prefix-for-mode mode "ms" "repl")
+          (spacemacs/set-leader-keys-for-major-mode mode "sc" 'nodejs-repl)
+          (spacemacs/set-leader-keys-for-major-mode mode "sq" 'nodejs-repl-quit-or-cancel)
+          (spacemacs/set-leader-keys-for-major-mode mode "sb" 'nodejs-repl-send-buffer)
+          (spacemacs/set-leader-keys-for-major-mode mode "sB" 'zro/nodejs-repl-send-buffer-and-switch)
+          (spacemacs/set-leader-keys-for-major-mode mode "sf" 'nodejs-repl-eval-function)
+          (spacemacs/set-leader-keys-for-major-mode mode "sF" 'zro/nodejs-repl-eval-function)
+          (spacemacs/set-leader-keys-for-major-mode mode "sr" 'nodejs-repl-send-region)
+          (spacemacs/set-leader-keys-for-major-mode mode "sR" 'zro/nodejs-repl-send-region))
+        (spacemacs/nodejs-repl-eval-set-key-bindings 'js2-mode))))
+
+  (javascript/init-nodejs-repl-eval)
   (javascript/init-mocha-mode)
+
+
 
   (defun gen-node-project ()
     (interactive)
     "Setup default configuration for nodejs project"
     ;; Copy files
     (copy-file "~/dotfiles/.tern-project" "./.tern-project")
-    ;;(copy-file "~/dotfiles/dir-locals/dir-locals.js.el" "./.dir-locals.el")
+    (copy-file "~/dotfiles/dir-locals/dir-locals.js.el" "./.dir-locals.el")
     ;; Add to .gitignore if we are using git
     (cond (magit-inside-gitdir-p
            (magit-gitignore "./.tern-project"))))
 
+  (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; GROOVY
+  ;; END JAVASCRIPT
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (defun groovy/init-groovy-mode()
-    (use-package groovy
-      :defer t
-      :init
-      (progn
-        (add-to-list 'auto-mode-alist '("\\.gradle\\'" . groovy-mode)))))
-  (groovy/init-goovy-mode)
 
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; GRADLE
+  ;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   )
 
@@ -315,12 +345,10 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode company-web web-completion-data rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby groovy-mode mocha gradle-mode yapfify yaml-mode ws-butler window-numbering which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smeargle restart-emacs rainbow-delimiters quelpa pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode pcre2el paradox orgit org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc info+ indent-guide ido-vertical-mode hy-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu ensime elisp-slime-nav dumb-jump disaster define-word cython-mode company-tern company-statistics company-emacs-eclim company-c-headers company-anaconda column-enforce-mode coffee-mode cmake-mode clean-aindent-mode clang-format auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
  '(safe-local-variable-values
    (quote
-    ((mocha-reporter . "spec")
+    ((nodejs-repl-arguments "--use_strict")
+     (mocha-reporter . "spec")
      (js2-global-externs
       (quote
        ("beforeEach" "afterEach" "before" "after" "it")))))))
