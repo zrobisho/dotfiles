@@ -40,6 +40,7 @@ values."
 
      java
      (c-c++ :variables
+            c-basic-offset 4
             c-c++-default-mode-for-headers 'c++-mode
             c-c++-enable-clang-support t
             company-c-headers-path-system "/usr/include/c++/4.2.1/")
@@ -57,9 +58,10 @@ values."
    dotspacemacs-additional-packages
    '(
      mocha
+     nodejs-repl
      gradle-mode
      groovy-mode
-     nodejs-repl
+     meghanada
      )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
@@ -328,10 +330,14 @@ layers configuration. You are free to put any user code."
   ;; END JAVASCRIPT
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; JAVA
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (remove-hook 'java-mode-hook 'eclim-mode)
+  (add-hook 'java-mode-hook 'meghanada)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; GRADLE
-  ;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   )
