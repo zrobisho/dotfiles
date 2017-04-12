@@ -50,6 +50,8 @@ values."
      scala
      clojure
      markdown
+     (csharp :variables
+             omnisharp-server-executable-path "/usr/local/bin/omnisharp")
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
