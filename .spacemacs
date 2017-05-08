@@ -290,6 +290,23 @@ layers configuration. You are free to put any user code."
         (spacemacs/mocha-set-key-bindings 'js2-mode))))
 
 
+  (defun zro/nodejs-repl-send-buffer-and-switch ()
+    "Call nodejs-repl-eval-buffer and switch to repl buffer"
+    (interactive)
+    (nodejs-repl-send-buffer)
+    (nodejs-repl-switch-to-repl))
+
+  (defun zro/nodejs-repl-send-function-and-switch ()
+    (interactive)
+    (nodejs-repl-send-last-sexp)
+    (nodejs-repl-switch-to-repl))
+
+  (defun zro/nodejs-repl-send-region-and-switch ()
+    (interactive)
+    (nodejs-repl-send-region)
+    (nodejs-repl-switch-to-repl))
+
+
   (defun javascript/init-nodejs-repl-eval ()
     (use-package nodejs-repl-eval
       :defer t
@@ -306,9 +323,9 @@ layers configuration. You are free to put any user code."
           (spacemacs/set-leader-keys-for-major-mode mode "sb" 'nodejs-repl-send-buffer)
           (spacemacs/set-leader-keys-for-major-mode mode "sB" 'zro/nodejs-repl-send-buffer-and-switch)
           (spacemacs/set-leader-keys-for-major-mode mode "sf" 'nodejs-repl-eval-function)
-          (spacemacs/set-leader-keys-for-major-mode mode "sF" 'zro/nodejs-repl-eval-function)
+          (spacemacs/set-leader-keys-for-major-mode mode "sF" 'zro/nodejs-repl-send-function-and-switch)
           (spacemacs/set-leader-keys-for-major-mode mode "sr" 'nodejs-repl-send-region)
-          (spacemacs/set-leader-keys-for-major-mode mode "sR" 'zro/nodejs-repl-send-region))
+          (spacemacs/set-leader-keys-for-major-mode mode "sR" 'zro/nodejs-repl-send-region-and-switch))
         (spacemacs/nodejs-repl-eval-set-key-bindings 'js2-mode))))
 
   (javascript/init-nodejs-repl-eval)
