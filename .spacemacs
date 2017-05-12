@@ -34,6 +34,7 @@ values."
                  js2-bounce-indent t
                  js2-basic-offset 4
                  js2-global-externs '("describe" "beforeEach" "afterEach" "before" "after" "it")
+                 json-reformat:indent-width 2
                  nodejs-repl-arguments '("--use_strict")
                  mocha-reporter "spec"
                  mocha-options "--recursive")
@@ -125,7 +126,7 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   dotspacemacs-default-font '("Source Code Pro"
+   dotspacemacs-default-font '("Consolas"
                                :size 13
                                :weight normal
                                :width normal
@@ -331,7 +332,12 @@ layers configuration. You are free to put any user code."
   (javascript/init-nodejs-repl-eval)
   (javascript/init-mocha-mode)
 
-
+  ;; json-mode uses js-indent-level to indent, but usually I like
+  ;; json to have 2 space'd indent and my js to have 4, can
+  ;; be set per project with dir-local 'json-indent-level'
+  (add-hook 'json-mode-hook '(lambda ()
+                               (let ((indent (or 'json-indent-level 2)))
+                                 (setq js-indent-level 2))))
 
   (defun gen-node-project ()
     (interactive)
