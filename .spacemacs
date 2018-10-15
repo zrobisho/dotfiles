@@ -18,14 +18,29 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     ruby
+     osx
+     lsp
+     git
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
      ;; <M-m f e R> (Emacs style) to install them.
      ;; ----------------------------------------------------------------
      auto-completion
+     (c-c++ :variables
+            c-basic-offset 4
+            c-c++-default-mode-for-headers 'c++-mode
+            c-c++-enable-clang-support t
+            company-c-headers-path-system "/usr/include/c++/4.2.1/")
+     (csharp :variables
+             omnisharp-server-executable-path "/usr/local/bin/omnisharp")
+     clojure
      emacs-lisp
+     (go :variables
+         go-backend 'lsp)
+     (groovy :variables
+             groovy-indent-offset 4)
+     java
      (javascript :variables
                  tern-command '("node" "/usr/local/bin/tern")
                  js2-include-node-externs t
@@ -34,26 +49,17 @@ values."
                  js2-bounce-indent t
                  js2-basic-offset 4
                  js2-global-externs '("describe" "beforeEach" "afterEach" "before" "after" "it")
-                 json-reformat:indent-width 2
                  nodejs-repl-arguments '("--use_strict")
                  mocha-reporter "spec"
                  mocha-options "--recursive")
-
-     java
-     (c-c++ :variables
-            c-basic-offset 4
-            c-c++-default-mode-for-headers 'c++-mode
-            c-c++-enable-clang-support t
-            company-c-headers-path-system "/usr/include/c++/4.2.1/")
-     git
-     (python :variables
-             python-test-runner 'pytest)
-     scala
-     clojure
      markdown
-     (csharp :variables
-             omnisharp-server-executable-path "/usr/local/bin/omnisharp")
-     )
+     (python :variables
+             python-backend 'lsp
+             python-test-runner 'pytest)
+     ruby
+     scala
+     sql
+   )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
@@ -63,8 +69,6 @@ values."
      mocha
      nodejs-repl
      gradle-mode
-     groovy-mode
-     meghanada
      )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
@@ -99,6 +103,7 @@ values."
    ;; uses emacs key bindings for vim's insert mode, but otherwise leaves evil
    ;; unchanged. (default 'vim)
    dotspacemacs-editing-style 'emacs
+   dotspacemacs-mode-line-theme 'spacemacs
    ;; If non nil output loading progress in `*Messages*' buffer. (default nil)
    dotspacemacs-verbose-loading nil
    ;; Specify the startup banner. Default value is `official', it displays
@@ -120,17 +125,18 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(tsdh-dark
+   dotspacemacs-themes '(klere
+                         tsdh-dark
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   dotspacemacs-default-font '("Consolas"
-                               :size 13
+   dotspacemacs-default-font '("Source Code Pro"
+                               :size 12
                                :weight normal
                                :width normal
-                               :powerline-scale 1.1)
+                               :powerline-scale 1.2)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The leader key accessible in `emacs state' and `insert state'
@@ -169,7 +175,7 @@ values."
    ;; auto-save the file in-place, `cache' to auto-save the file to another
    ;; file stored in the cache directory and `nil' to disable auto-saving.
    ;; (default 'cache)
-   dotspacemacs-auto-save-file-location 'cache
+   dotspacemacs-auto-save-file-location nil
    ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 5
    ;; If non nil then `ido' replaces `helm' for some commands. For now only
@@ -267,12 +273,9 @@ in `dotspacemacs/user-config'."
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
 
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; JAVASCRIPT
   ;;
-  ;; TODO:
-  ;; - jsdoc remove old doc if function param change
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (defun javascript/init-mocha-mode ()
     (use-package mocha
@@ -307,6 +310,13 @@ layers configuration. You are free to put any user code."
     (nodejs-repl-send-region)
     (nodejs-repl-switch-to-repl))
 
+  (defun zro/find-project-start-file ()
+    'nodejs-debugger-start-file)
+
+  (defun zro/nodejs-start-debugger ()
+    (interactive)
+    (let ((file (zro/find-project-start-file)))
+      (realgud:nodejs (concat "node debug " file))))
 
   (defun javascript/init-nodejs-repl-eval ()
     (use-package nodejs-repl-eval
@@ -332,12 +342,7 @@ layers configuration. You are free to put any user code."
   (javascript/init-nodejs-repl-eval)
   (javascript/init-mocha-mode)
 
-  ;; json-mode uses js-indent-level to indent, but usually I like
-  ;; json to have 2 space'd indent and my js to have 4, can
-  ;; be set per project with dir-local 'json-indent-level'
-  (add-hook 'json-mode-hook '(lambda ()
-                               (let ((indent (or 'json-indent-level 2)))
-                                 (setq js-indent-level 2))))
+
 
   (defun gen-node-project ()
     (interactive)
@@ -356,12 +361,6 @@ layers configuration. You are free to put any user code."
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; JAVA
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (remove-hook 'java-mode-hook 'eclim-mode)
-  (add-hook 'java-mode-hook 'meghanada)
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; GRADLE
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -376,9 +375,15 @@ layers configuration. You are free to put any user code."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (reveal-in-osx-finder pbcopy osx-trash osx-dictionary launchctl evil-magit company-anaconda anaconda-mode magit git-commit ghub with-editor pythonic yapfify ws-butler winum which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode paradox orgit org-bullets open-junk-file omnisharp noflet nodejs-repl neotree move-text mocha mmm-mode minitest meghanada markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc indent-guide hy-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag groovy-mode gradle-mode google-translate golden-ratio gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu ensime elisp-slime-nav dumb-jump disaster diminish define-word cython-mode company-tern company-statistics company-emacs-eclim company-c-headers column-enforce-mode coffee-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
  '(safe-local-variable-values
    (quote
-    ((nodejs-repl-arguments "--use_strict")
+    ((python-test-runner quote pytest)
+     (python-test-runner
+      (quote pytest))
+     (nodejs-repl-arguments "--use_strict")
      (mocha-reporter . "spec")
      (js2-global-externs
       (quote
@@ -389,3 +394,33 @@ layers configuration. You are free to put any user code."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (seeing-is-believing prettier-js lsp-java lsp-go helm-git-grep gitignore-templates doom-modeline eldoc-eval shrink-path dotenv-mode reveal-in-osx-finder pbcopy osx-trash osx-dictionary launchctl evil-magit company-anaconda anaconda-mode magit git-commit ghub with-editor pythonic yapfify ws-butler winum which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode paradox orgit org-bullets open-junk-file omnisharp noflet nodejs-repl neotree move-text mocha mmm-mode minitest meghanada markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc indent-guide hy-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag groovy-mode gradle-mode google-translate golden-ratio gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu ensime elisp-slime-nav dumb-jump disaster diminish define-word cython-mode company-tern company-statistics company-emacs-eclim company-c-headers column-enforce-mode coffee-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
+ '(safe-local-variable-values
+   (quote
+    ((python-test-runner quote pytest)
+     (python-test-runner
+      (quote pytest))
+     (nodejs-repl-arguments "--use_strict")
+     (mocha-reporter . "spec")
+     (js2-global-externs
+      (quote
+       ("beforeEach" "afterEach" "before" "after" "it")))))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+)
