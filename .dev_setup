@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+################################################################################
+#
+# Setup and config for new dev box or after upgrade
+#
+################################################################################
+
+################################################################################
+#
+# Emacs / Spacemacs
+#
+################################################################################
+brew install emacs
+
+################################################################################
+#
+# Setup Go
+#
+# Currently using Go v1.11
+#
+# Some spacemacs features, like go-langserver (for lsp backend) are only on
+# spacemacs develop now.
+#
+# TODO:
+# Figure out good agnostic GOPATH setup
+#
+################################################################################
+
+## Go language
+brew install go
+
+## GOPATH setup
+mkdir -p ~/go
+
+## Go packages for spacemacs
+## Docs: https://github.com/syl20bnr/spacemacs/tree/develop/layers/+lang/go
+go get -u -v github.com/mdempsky/gocode
+go get -u -v github.com/rogpeppe/godef
+go get -u -v golang.org/x/tools/cmd/guru
+go get -u -v golang.org/x/tools/cmd/gorename
+go get -u -v golang.org/x/tools/cmd/goimports
+go get -u -v github.com/zmb3/gogetdoc
+go get -u -v github.com/cweill/gotests/...
+go get -u github.com/haya14busa/gopkgs/cmd/gopkgs
+go get -u -v github.com/davidrjenni/reftools/cmd/fillstruct
+go get -u github.com/josharian/impl
+go get -u github.com/sourcegraph/go-langserver
