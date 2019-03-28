@@ -16,6 +16,17 @@ brew install emacs-plus [options]
 
 ################################################################################
 #
+# Python
+#
+################################################################################
+# https://github.com/pyenv/pyenv/issues/1219
+xcode-select --install
+sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+brew install pyenv
+pyenv install x.x.x
+
+################################################################################
+#
 # Setup Go
 #
 # Currently using Go v1.11
