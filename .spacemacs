@@ -18,6 +18,7 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     yaml
      osx
      lsp
      git
@@ -37,9 +38,12 @@ values."
      clojure
      emacs-lisp
      (go :variables
-         go-backend 'lsp)
+         go-backend 'lsp
+         go-use-golangci-lint t
+         go-format-before-save t)
      (groovy :variables
-             groovy-indent-offset 4)
+             groovy-indent-offset 2)
+     hcl
      java
      (javascript :variables
                  tern-command '("node" "/usr/local/bin/tern")
