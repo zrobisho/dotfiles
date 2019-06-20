@@ -17,16 +17,8 @@ values."
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
-   '(
-     yaml
-     osx
-     lsp
-     git
-     ;; ----------------------------------------------------------------
-     ;; Example of useful layers you may want to use right away.
-     ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
-     ;; <M-m f e R> (Emacs style) to install them.
-     ;; ----------------------------------------------------------------
+   '(html
+     ansible
      auto-completion
      (c-c++ :variables
             c-basic-offset 4
@@ -36,14 +28,15 @@ values."
      (csharp :variables
              omnisharp-server-executable-path "/usr/local/bin/omnisharp")
      clojure
+     docker
      emacs-lisp
+     git
      (go :variables
          go-backend 'lsp
          go-use-golangci-lint t
          go-format-before-save t)
      (groovy :variables
              groovy-indent-offset 2)
-     hcl
      java
      (javascript :variables
                  tern-command '("node" "/usr/local/bin/tern")
@@ -56,13 +49,20 @@ values."
                  nodejs-repl-arguments '("--use_strict")
                  mocha-reporter "spec"
                  mocha-options "--recursive")
+     lsp
      markdown
+     osx
      (python :variables
              python-backend 'lsp
-             python-test-runner 'pytest)
+             python-test-runner 'pytest
+             python-formatter 'black
+             python-format-on-save t
+             python-pipenv-activate t)
      ruby
      scala
+     shell
      sql
+     yaml
    )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -70,6 +70,7 @@ values."
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages
    '(
+     hcl
      mocha
      nodejs-repl
      gradle-mode
@@ -129,7 +130,8 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(klere
+   dotspacemacs-themes '(wombat
+                         klere
                          tsdh-dark
                          )
    ;; If non nil the cursor color matches the state color in GUI Emacs.
@@ -410,7 +412,7 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (seeing-is-believing prettier-js lsp-java lsp-go helm-git-grep gitignore-templates doom-modeline eldoc-eval shrink-path dotenv-mode reveal-in-osx-finder pbcopy osx-trash osx-dictionary launchctl evil-magit company-anaconda anaconda-mode magit git-commit ghub with-editor pythonic yapfify ws-butler winum which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode paradox orgit org-bullets open-junk-file omnisharp noflet nodejs-repl neotree move-text mocha mmm-mode minitest meghanada markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc indent-guide hy-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag groovy-mode gradle-mode google-translate golden-ratio gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu ensime elisp-slime-nav dumb-jump disaster diminish define-word cython-mode company-tern company-statistics company-emacs-eclim company-c-headers column-enforce-mode coffee-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
+    (web-mode tagedit slim-mode scss-mode sass-mode pug-mode impatient-mode htmlize helm-css-scss haml-mode emmet-mode counsel-css company-web web-completion-data add-node-modules-path reveal-in-osx-finder pbcopy osx-trash osx-dictionary launchctl evil-magit company-anaconda anaconda-mode magit git-commit ghub with-editor pythonic yapfify ws-butler winum which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline smeargle rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-delimiters pyvenv pytest pyenv-mode py-isort popwin pip-requirements persp-mode paradox orgit org-bullets open-junk-file omnisharp noflet nodejs-repl neotree move-text mocha mmm-mode minitest meghanada markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint json-mode js2-refactor js-doc indent-guide hy-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag groovy-mode gradle-mode google-translate golden-ratio gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu ensime elisp-slime-nav dumb-jump disaster diminish define-word cython-mode company-tern company-statistics company-emacs-eclim company-c-headers column-enforce-mode coffee-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
  '(safe-local-variable-values
    (quote
     ((python-test-runner quote pytest)
